@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -8,14 +9,26 @@ public class Player : MonoBehaviour
 
     Rigidbody2D rb;
     private Animator anim;
+    AudioSource source;
 
     public int health;
+
+    public Text healthDisplay;
+
+    public GameObject losePanel;
+
+    public float startDashTime;
+    private float dashTime;
+    public float extraSpeed;
+    public bool isDashing;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        healthDisplay.text= health.ToString();
+        source = GetComponent<AudioSource>();
     }
 
 
@@ -44,15 +57,36 @@ public class Player : MonoBehaviour
 
         //moving player
         rb.velocity = new Vector2(input * speed, rb.velocity.y);
+
+        //new
+        if (Input.GetKeyDown(KeyCode.Space) && isDashing==false)
+        {
+            speed += extraSpeed;
+            isDashing = true;
+            dashTime = startDashTime;
+        }
+
+        if (dashTime <= 0 && isDashing==true)
+        {
+            isDashing = false;
+            speed -= extraSpeed;
+        }
+        else
+        {
+            dashTime -= Time.deltaTime;
+        }
     }
 
     public void TakeDamage(int damageAmount)
     {
         health -= damageAmount;
+        healthDisplay.text = health.ToString();
+        source.Play();
 
         if (health <= 0)
         {
             //destroy player
+            losePanel.SetActive(true);
             Destroy(gameObject);
         }
     }
